@@ -47,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start application with proper Expo web command
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npx", "expo", "start", "--web", "--port", "19007", "--host", "0.0.0.0", "--no-dev", "--minify"]
+CMD ["npx", "expo", "start", "--web", "--port", "19007", "--tunnel"]
