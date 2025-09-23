@@ -39,6 +39,9 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy APK file if it exists
+COPY streamer-app.apk /usr/share/nginx/html/ 2>/dev/null || true
+
 # SPA fallback config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
