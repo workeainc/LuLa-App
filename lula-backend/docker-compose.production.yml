@@ -124,7 +124,7 @@ services:
       - "19008:5173"
     environment:
       - NODE_ENV=production
-      - VITE_BACKEND_URL=https://api.yourdomain.com
+      - VITE_BACKEND_URL=http://13.53.137.157:5002
     networks:
       - lula-network
     logging:
