@@ -1,14 +1,14 @@
 # Use Node.js LTS version
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apk add --no-cache \
-    dumb-init \
-    && addgroup -g 1001 -S nodejs \
-    && adduser -S nodejs -u 1001
+    python3 \
+    make \
+    g++
 
 # Copy package files
 COPY package*.json ./
@@ -28,23 +28,22 @@ RUN cp firebaseConfig.web.js firebaseConfig.js
 # Replace index.js with web-compatible version
 RUN cp index.web.js index.js
 
-# Create logs directory and fix permissions
-RUN mkdir -p logs && \
-    mkdir -p node_modules/react-native-css-interop/.cache && \
-    chown -R nodejs:nodejs logs && \
-    chown -R nodejs:nodejs node_modules/react-native-css-interop/.cache && \
-    chown -R nodejs:nodejs /app
+# Build static web output
+ENV CI=1 EXPO_NO_TELEMETRY=1
+RUN npx expo export --platform web --output dist
 
-# Switch to non-root user
-USER nodejs
+########################################
+# Runtime image - Nginx serving static
+########################################
+FROM nginx:alpine
 
-# Expose port
-EXPOSE 19007
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# SPA fallback config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:19007', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start application with proper Expo web command
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["npm", "run", "web"]
+  CMD wget -qO- http://localhost || exit 1
