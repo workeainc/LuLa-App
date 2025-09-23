@@ -22,6 +22,12 @@ RUN npx expo install react-native-web@~0.19.6 react-dom@18.2.0 @expo/metro-runti
 # Copy application code
 COPY . .
 
+# Replace Firebase config with web-compatible version
+RUN cp firebaseConfig.web.js firebaseConfig.js
+
+# Replace index.js with web-compatible version
+RUN cp index.web.js index.js
+
 # Create logs directory and fix permissions
 RUN mkdir -p logs && \
     mkdir -p node_modules/react-native-css-interop/.cache && \
@@ -39,6 +45,6 @@ EXPOSE 19006
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:19006', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Start application
+# Start application with proper Expo web command
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npx", "expo", "start", "--web", "--port", "19006", "--host", "0.0.0.0"]
+CMD ["npx", "expo", "start", "--web", "--port", "19006", "--host", "0.0.0.0", "--no-dev", "--minify"]
