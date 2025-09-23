@@ -41,4 +41,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start application
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npm", "run", "web"]
+CMD ["npx", "expo", "start", "--web", "--port", "19006", "--host", "0.0.0.0"]
