@@ -4,7 +4,7 @@ import { clearAuth } from '../store/slices/auth'
 
 const unauthorizedCode = [401]
 
-const baseURL = 'http://localhost:5002/api';
+const baseURL = 'http://13.53.137.157:5002/api';
 // const baseURL = 'http://sovo-env.eba-3aycdmpe.ca-central-1.elasticbeanstalk.com/api/v1';
 
 export const axiosInstance = axios.create({

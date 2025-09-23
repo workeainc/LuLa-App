@@ -2,8 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Backend API Configuration
-const API_BASE_URL = 'http://localhost:5000/api'; // Change to your server URL
-const WS_BASE_URL = 'ws://localhost:5000'; // WebSocket URL
+const API_BASE_URL = 'http://13.53.137.157:5002/api';
+const WS_BASE_URL = 'ws://13.53.137.157:5002';
 
 class BackendService {
   constructor() {
