@@ -19,9 +19,6 @@ RUN npm ci && npm cache clean --force
 # Install web dependencies for Expo web
 RUN npx expo install react-native-web@~0.19.6 react-dom@18.2.0 @expo/metro-runtime@~3.1.3
 
-# Install ngrok globally to avoid tunnel prompts
-RUN npm install -g @expo/ngrok@^4.1.0
-
 # Copy application code
 COPY . .
 
@@ -50,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Start application with proper Expo web command
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npx", "expo", "start", "--web", "--port", "19007"]
+CMD ["npm", "run", "web"]
