@@ -52,3 +52,11 @@ backups/
 
 # Tests that shouldn't be committed by default
 test-*.js
+
+# Android signing keys and artifacts
+*.jks
+*.keystore
+**/android/app/release-key.jks
+**/android/app/debug.keystore
+*.apk
+*.aab
