@@ -1,4 +1,3 @@
-const admin = require('firebase-admin');
 const { Expo } = require('expo-server-sdk');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
@@ -14,24 +13,11 @@ class NotificationService {
   }
 
   /**
-   * Initialize Firebase Cloud Messaging
+   * Initialize Firebase Cloud Messaging - DISABLED FOR EXPRESS.JS BACKEND
    */
   initializeFCM() {
-    try {
-      if (!admin.apps.length) {
-        // Initialize Firebase Admin SDK
-        const serviceAccount = require('../../firebase-service-account.json');
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-          projectId: process.env.FIREBASE_PROJECT_ID || 'lula-app-e7bf5'
-        });
-      }
-      this.fcmInitialized = true;
-      console.log('✅ FCM initialized successfully');
-    } catch (error) {
-      console.error('❌ FCM initialization failed:', error.message);
-      this.fcmInitialized = false;
-    }
+    console.log('⚠️ FCM disabled - Using Express.js backend without Firebase');
+    this.fcmInitialized = false;
   }
 
   /**
@@ -229,11 +215,12 @@ class NotificationService {
         }
       };
 
-      const response = await admin.messaging().send(message);
+      // FCM disabled - using Express.js backend without Firebase
+      throw new Error('FCM not available - using Express.js backend');
       
       return {
-        success: true,
-        messageId: response,
+        success: false,
+        messageId: null,
         platform: 'fcm'
       };
 

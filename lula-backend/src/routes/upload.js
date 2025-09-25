@@ -1,14 +1,34 @@
 const express = require('express');
 const multer = require('multer');
 const AWS = require('aws-sdk');
+const path = require('path');
+const fs = require('fs');
 const router = express.Router();
 
-// Configure AWS S3
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
-});
+// Check if AWS is configured
+const isAWSConfigured = process.env.AWS_ACCESS_KEY_ID && 
+                       process.env.AWS_SECRET_ACCESS_KEY && 
+                       process.env.S3_BUCKET_NAME &&
+                       process.env.AWS_ACCESS_KEY_ID !== 'your-aws-access-key';
+
+let s3;
+if (isAWSConfigured) {
+  // Configure AWS S3
+  s3 = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION
+  });
+  console.log('✅ AWS S3 configured for file uploads');
+} else {
+  console.log('⚠️ AWS S3 not configured, using local file storage');
+  
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(__dirname, '../../uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+}
 
 // Configure multer for memory storage
 const upload = multer({
@@ -40,21 +60,40 @@ router.post('/image', upload.single('image'), async (req, res) => {
     const fileExtension = req.file.originalname.split('.').pop();
     const fileName = `${fileId}.${fileExtension}`;
 
-    const uploadParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: fileName,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-      ACL: 'public-read'
-    };
+    if (isAWSConfigured) {
+      // Upload to AWS S3
+      const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: fileName,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype,
+        ACL: 'public-read'
+      };
 
-    const result = await s3.upload(uploadParams).promise();
+      const result = await s3.upload(uploadParams).promise();
 
-    res.json({
-      error: false,
-      url: result.Location,
-      fileId: fileId
-    });
+      res.json({
+        error: false,
+        url: result.Location,
+        fileId: fileId
+      });
+    } else {
+      // Save to local storage
+      const uploadsDir = path.join(__dirname, '../../uploads');
+      const filePath = path.join(uploadsDir, fileName);
+      
+      fs.writeFileSync(filePath, req.file.buffer);
+      
+      // Return local URL (assuming the uploads directory is served statically)
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const fileUrl = `${baseUrl}/uploads/${fileName}`;
+
+      res.json({
+        error: false,
+        url: fileUrl,
+        fileId: fileId
+      });
+    }
 
   } catch (error) {
     console.error('Image upload error:', error);

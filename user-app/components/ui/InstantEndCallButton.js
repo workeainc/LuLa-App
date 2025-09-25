@@ -5,7 +5,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { forceCallTermination } from '../../utils/InstantCallUtils';
+import { shadowPresets } from '../../utils/shadowUtils';
 
 const InstantEndCallButton = ({ call, onCallEnded, style, size = 'medium' }) => {
     const handleInstantEndCall = async () => {
@@ -76,13 +76,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
+        ...shadowPresets.large,
     },
     gradient: {
         flex: 1,

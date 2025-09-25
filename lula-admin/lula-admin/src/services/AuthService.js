@@ -1,65 +1,37 @@
-import BaseService from "./BaseService";
-import {
-  signInWithEmailAndPassword,
-  AuthErrorCodes,
-  createUserWithEmailAndPassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-} from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import axiosInstance from "../configs/axios.config";
 
-class AuthService extends BaseService {
-  #collection;
-  constructor(collection) {
-    super();
-    this.#collection = collection;
-  }
-
+class AuthService {
   async register(email, password) {
     try {
-      const { user } = await createUserWithEmailAndPassword(this.auth, email, password);
-      const dummyUser = {
+      const response = await axiosInstance.post('/auth/register', {
         email,
-        name: "Dummy User",
-        phone: "",
-        status: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        id: user.uid,
-      };
-
-      await setDoc(doc(this.db, this.#collection, user.uid), dummyUser);
-
-      return { error: false, data: dummyUser };
+        password,
+        role: 'ADMIN'
+      });
+      
+      return { error: false, data: response.data };
     } catch (error) {
-      if (error.code === AuthErrorCodes.EMAIL_EXISTS) {
+      if (error.response?.status === 409) {
         return this.handleError("Email is Already Taken");
       } else {
-        return this.handleError(error.message);
+        return this.handleError(error.response?.data?.message || error.message);
       }
     }
   }
 
   async login(email, password) {
     try {
-      const { user } = await signInWithEmailAndPassword(this.auth, email, password);
-      const snapshot = await getDoc(doc(this.db, this.#collection, user.uid));
-
-      if (!snapshot.exists()) {
-        return this.handleError("Account not found");
-      }
-
-      return { error: false, data: snapshot.data() };
+      const response = await axiosInstance.post('/auth/login', {
+        email,
+        password
+      });
+      
+      return { error: false, data: response.data };
     } catch (error) {
-      if (error.code === AuthErrorCodes.INVALID_LOGIN_CREDENTIALS) {
-        // if (email === "dummy@gmail.com" && password === "Admin@123") {
-        //   const res = await this.register(email, password);
-        //   return { error: false, data: res.data };
-        // }
+      if (error.response?.status === 401) {
         return this.handleError("Invalid Credentials");
       } else {
-        return this.handleError(error.message);
+        return this.handleError(error.response?.data?.message || error.message);
       }
     }
   }
@@ -67,33 +39,39 @@ class AuthService extends BaseService {
   async updatePassword(data) {
     try {
       if (!data.password) return;
-      const user = this.auth.currentUser;
-      const creds = EmailAuthProvider.credential(user.email, data.currentPassword);
-      await reauthenticateWithCredential(user, creds);
-      await updatePassword(user, data.password);
+      
+      const response = await axiosInstance.put('/auth/change-password', {
+        currentPassword: data.currentPassword,
+        newPassword: data.password
+      });
+      
       return { error: false, message: "Password Updated Successfully" };
     } catch (error) {
-      if (error.code === AuthErrorCodes.INVALID_LOGIN_CREDENTIALS) {
+      if (error.response?.status === 401) {
         return { error: true, message: "Invalid Current Password" };
       } else {
-        return { error: false, message: error.message };
+        return { error: true, message: error.response?.data?.message || error.message };
       }
     }
   }
 
   async updateDetails(data) {
     try {
-      const ref = doc(this.db, this.#collection, data.id);
-      await updateDoc(ref, {
+      const response = await axiosInstance.put('/user/profile', {
         name: data.name,
         phone: data.phone,
       });
 
       return { error: false, message: "Details Updated Successfully" };
     } catch (error) {
-      return { error: true, message: error.message };
+      return { error: true, message: error.response?.data?.message || error.message };
     }
+  }
+
+  handleError(message) {
+    console.error(message);
+    return { error: true, message };
   }
 }
 
-export default new AuthService("super-admin");
+export default new AuthService();

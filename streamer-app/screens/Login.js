@@ -3,10 +3,10 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-nativ
 import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import PhoneInput from 'react-native-phone-number-input'
+import WebCompatiblePhoneInput from '../components/ui/WebCompatiblePhoneInput'
 import { handleError } from '../utils/function'
 import showToast from '../utils/toast'
-import AuthService from '../services/AuthService'
+import AuthService from '../services/NewAuthService'
 import SubmitButton from '../components/ui/SubmitButton'
 import { useDispatch } from 'react-redux'
 import Loading from '../components/shared/Loading'
@@ -129,7 +129,7 @@ const handleVerifyOtp = async () => {
                 <Text style={styles.smallText}>{isOtpSent ? 'Please enter the OTP sent to your phone number' : 'A verification code will be sent to this number'}</Text>
                 {!isOtpSent ? (
                     <View className="my-4 bg-gray-50">
-                        <PhoneInput
+                        <WebCompatiblePhoneInput
                             ref={phoneInput}
                             defaultCode={selectedCountryCode.cca2}
                             layout="first"

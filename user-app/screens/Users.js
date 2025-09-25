@@ -3,8 +3,8 @@ import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndi
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import UserService from '../services/UserService';
-import AuthService from '../services/AuthService';
+import NewUserService from '../services/NewUserService';
+import NewAuthService from '../services/NewAuthService';
 import UserCard from '../components/card/UserCard';
 import { useSelector } from 'react-redux';
 

@@ -36,6 +36,42 @@ router.post('/token', authMiddleware, async (req, res) => {
 });
 
 /**
+ * @route   POST /api/stream/generate-token
+ * @desc    Generate Stream.io token for user (alternative endpoint for CallManager)
+ * @access  Public (but requires valid userId in body)
+ */
+router.post('/generate-token', async (req, res) => {
+  try {
+    const { userId, userData } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: true,
+        message: 'User ID is required'
+      });
+    }
+
+    // Generate Stream.io token
+    const token = await StreamService.generateToken(userId, userData);
+
+    res.json({
+      error: false,
+      message: 'Stream.io token generated successfully',
+      token,
+      apiKey: StreamService.apiKey,
+      userId
+    });
+
+  } catch (error) {
+    console.error('Generate token error:', error);
+    res.status(500).json({
+      error: true,
+      message: error.message || 'Failed to generate Stream.io token'
+    });
+  }
+});
+
+/**
  * @route   POST /api/stream/user/upsert
  * @desc    Create or update user in Stream.io
  * @access  Private

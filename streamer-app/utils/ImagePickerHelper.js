@@ -1,5 +1,13 @@
-// import { Platform } from 'react-native'
+import { Platform } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
+
+// Conditionally import web image picker only on web platform
+let launchWebProfileImagePicker, launchWebFullProfileImagePicker;
+if (Platform.OS === 'web') {
+    const WebImagePicker = require('./WebImagePicker');
+    launchWebProfileImagePicker = WebImagePicker.launchWebProfileImagePicker;
+    launchWebFullProfileImagePicker = WebImagePicker.launchWebFullProfileImagePicker;
+}
 
 export const launchImagePicker = async (options = {}) => {
     const defaultOptions = {
@@ -23,6 +31,11 @@ export const launchImagePicker = async (options = {}) => {
 
 // New function specifically for profile pictures with full image support
 export const launchProfileImagePicker = async () => {
+    // Use web-compatible image picker on web platform
+    if (Platform.OS === 'web') {
+        return await launchWebProfileImagePicker();
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -43,6 +56,11 @@ export const launchProfileImagePicker = async () => {
 
 // Function for high-quality profile images without editing constraints
 export const launchFullProfileImagePicker = async () => {
+    // Use web-compatible image picker on web platform
+    if (Platform.OS === 'web') {
+        return await launchWebFullProfileImagePicker();
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false, // No editing to preserve full image

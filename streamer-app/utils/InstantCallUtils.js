@@ -3,7 +3,7 @@
 
 import { Alert } from 'react-native';
 import { navigate } from '../navigations/RootNavigation';
-import AuthService from '../services/AuthService';
+import NewAuthService from '../services/NewAuthService';
 
 /**
  * Instantly handle incoming call without any delays

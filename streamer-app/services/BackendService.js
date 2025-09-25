@@ -2,8 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Backend API Configuration
-const API_BASE_URL = 'http://13.53.137.157:5002/api';
-const WS_BASE_URL = 'ws://13.53.137.157:5002';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002/api';
+const WS_BASE_URL = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:3002';
 
 class BackendService {
   constructor() {
@@ -78,6 +78,16 @@ class BackendService {
     } catch (error) {
       return this.handleError(error);
     }
+  }
+
+  // Get WebSocket URL
+  static getWebSocketUrl() {
+    return WS_BASE_URL;
+  }
+
+  // Get API Base URL
+  static getApiBaseUrl() {
+    return API_BASE_URL;
   }
 
   // Handle API errors

@@ -19,7 +19,7 @@ import notifee from '@notifee/react-native';
 import { Audio } from 'expo-av';
 import { DeviceEventEmitter } from 'react-native';
 import RingtoneManager from '../utils/RingtoneManager';
-import AuthService from '../services/AuthService';
+import NewAuthService from '../services/NewAuthService';
 import CallManager from '../utils/CallManager';
 import { callType } from '../constants/data';
 
@@ -158,7 +158,7 @@ const ReceiveCall = () => {
             
             // Update call status to accepted
             if (callData?.callId && user?.id) {
-                await AuthService.update(user.id, { 
+                await NewAuthService.updateProfile(user.id, { 
                     currentCall: { 
                         ...callData, 
                         type: callType.ONGOING 
@@ -215,13 +215,13 @@ const ReceiveCall = () => {
             // Update call status to declined/clear for both users
             const updates = [];
             if (user?.id) {
-                updates.push(AuthService.update(user.id, { 
+                updates.push(NewAuthService.updateProfile(user.id, { 
                     currentCall: null, 
                     inCall: false 
                 }));
             }
             if (callData?.callerId) {
-                updates.push(AuthService.update(callData.callerId, { 
+                updates.push(NewAuthService.updateProfile(callData.callerId, { 
                     currentCall: null, 
                     inCall: false 
                 }));

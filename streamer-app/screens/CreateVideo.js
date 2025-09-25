@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons'
 import { Video } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
-import PostService from '../services/PostService'; // Assuming you'll use PostService for upload and post creation
+import BackendService from '../services/BackendService'; // Use BackendService for upload and post creation
 import showToast from '../utils/toast';
 import { handleError } from '../utils/function';
 import SubmitButton from '../components/ui/SubmitButton'; // Assuming you have a SubmitButton component

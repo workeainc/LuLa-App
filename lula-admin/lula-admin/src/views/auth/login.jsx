@@ -11,7 +11,7 @@ import SubmitButton from "../../components/ui/SubmitButton";
 // import { setAuth } from "../../store/slice/auth";
 import logoFull from "../../assets/images/logo/logo.png";
 import AuthService from "../../services/AuthService";
-import { setUser } from "../../store/slice/auth";
+import { setUser, setToken } from "../../store/slice/auth";
 import { toast } from "react-toastify";
 const schema = yup
   .object({
@@ -36,11 +36,14 @@ const Login = () => {
     try {
       const res = await AuthService.login(data.email, data.password);
       if (!res.error) {
-        dispatch(
-          setUser({
-            user: res.data,
-          })
-        );
+        // Store token and user data
+        dispatch(setToken(res.data.token));
+        dispatch(setUser({ user: res.data.user }));
+        
+        // Also store in localStorage for persistence
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        
         navigate("/dashboard");
       } else {
         toast.error(res.message);

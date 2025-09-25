@@ -5,14 +5,16 @@ import {
     StyleSheet,
     TouchableOpacity,
     Image,
+    ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native'
+import APKDownloadCard from '../components/ui/APKDownloadCard';
 
 export default function Main() {
     const navigation = useNavigation()
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.stepContainer}>
                 <View style={styles.profileImageContainer}>
                     <View style={styles.imageWrapper}>
@@ -30,8 +32,10 @@ export default function Main() {
                 <Text style={styles.title3}>Riya Khan</Text>
                 <Text style={styles.subtitle}>Welcome! Your profile is complete. Enjoy a personalized experience ahead!</Text>
                 
+                {/* APK Download Section */}
+                <APKDownloadCard appType="user" />
             </View>
-        </View>
+        </ScrollView>
     );
 }
 

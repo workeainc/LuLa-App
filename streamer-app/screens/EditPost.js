@@ -10,7 +10,7 @@ import {
     Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import PostService from '../services/PostService';
+import BackendService from '../services/BackendService';
 import { handleError } from '../utils/function';
 import showToast from '../utils/toast'
 

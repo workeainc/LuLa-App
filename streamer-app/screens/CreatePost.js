@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, TextInput, Button, Image, TouchableOpacity } fr
 import React, { useState } from 'react'
 import { Video } from 'expo-av'
 import * as ImagePicker from 'expo-image-picker'
-import PostService from '../services/PostService'
+import BackendService from '../services/BackendService'
 import showToast from '../utils/toast'
 import { handleError } from '../utils/function'
 import SubmitButton from '../components/ui/SubmitButton'

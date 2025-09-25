@@ -164,6 +164,43 @@ class AdminService {
     }
   }
 
+  // Withdrawals Management
+  async getWithdrawals(params = {}) {
+    try {
+      const response = await axiosInstance.get('/admin/withdrawals', { params });
+      return { error: false, data: response.data };
+    } catch (error) {
+      return { 
+        error: true, 
+        message: error.response?.data?.message || 'Failed to get withdrawals' 
+      };
+    }
+  }
+
+  async updateWithdrawalStatus(withdrawalId, data) {
+    try {
+      const response = await axiosInstance.put(`/admin/withdrawals/${withdrawalId}`, data);
+      return { error: false, data: response.data };
+    } catch (error) {
+      return { 
+        error: true, 
+        message: error.response?.data?.message || 'Failed to update withdrawal status' 
+      };
+    }
+  }
+
+  async getWithdrawalAnalytics(params = {}) {
+    try {
+      const response = await axiosInstance.get('/admin/withdrawals/analytics/overview', { params });
+      return { error: false, data: response.data };
+    } catch (error) {
+      return { 
+        error: true, 
+        message: error.response?.data?.message || 'Failed to get withdrawal analytics' 
+      };
+    }
+  }
+
   // System Health
   async getSystemHealth() {
     try {

@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Coin = require('../models/Coin');
+const MSG91Service = require('../services/MSG91Service');
 const router = express.Router();
 
 // Register/Login with OTP
@@ -17,15 +18,22 @@ router.post('/register', async (req, res) => {
       });
     }
     
-    // Check if user already exists
+    // Check if user already exists (regardless of role, since phoneNumber is unique)
+    console.log(`🔍 Checking for existing user with phone: ${phoneNumber}`);
     let user = await User.findOne({ 
-      phoneNumber, 
-      role,
+      phoneNumber,
       isDeleted: false 
     });
+    console.log(`🔍 Found existing user:`, user ? `Yes (ID: ${user._id}, Role: ${user.role})` : 'No');
     
     if (user) {
-      // User exists, update last login
+      // User exists, update role if different and update last login
+      const previousRole = user.role;
+      if (user.role !== role) {
+        user.role = role;
+        console.log(`🔄 Updated user role from ${previousRole} to ${role} for phone: ${phoneNumber}`);
+      }
+      
       user.lastLoginAt = new Date();
       user.isOnline = true;
       await user.save();
@@ -39,7 +47,7 @@ router.post('/register', async (req, res) => {
       
       return res.json({
         error: false,
-        message: 'Login successful',
+        message: previousRole !== role ? 'Role updated and login successful' : 'Login successful',
         user: {
           id: user._id,
           phoneNumber: user.phoneNumber,
@@ -98,24 +106,108 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Verify OTP (placeholder - integrate with Twilio)
+// Send OTP for phone verification
+router.post('/send-otp', async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({
+        error: true,
+        message: 'Phone number is required'
+      });
+    }
+    
+    // Generate OTP
+    const otp = MSG91Service.generateOTP();
+    console.log('📱 Generated OTP for', phoneNumber, ':', otp);
+    
+    // Send OTP via MSG91
+    const otpResult = await MSG91Service.sendOTP(phoneNumber, otp);
+    
+    if (otpResult.error) {
+      return res.status(500).json({
+        error: true,
+        message: 'Failed to send OTP',
+        details: otpResult.details
+      });
+    }
+    
+    // In production, store OTP in Redis with expiration
+    // For now, we'll use a simple in-memory store
+    global.otpStore = global.otpStore || {};
+    global.otpStore[phoneNumber] = {
+      otp: otp,
+      expiry: Date.now() + (5 * 60 * 1000) // 5 minutes
+    };
+    
+    res.json({
+      error: false,
+      message: 'OTP sent successfully',
+      requestId: otpResult.requestId,
+      // For development only - remove in production
+      ...(process.env.NODE_ENV === 'development' && { devOtp: otp })
+    });
+
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to send OTP'
+    });
+  }
+});
+
+// Verify OTP - Updated to use MSG91
 router.post('/verify-otp', async (req, res) => {
   try {
     const { phoneNumber, otp } = req.body;
     
-    // TODO: Implement actual OTP verification with Twilio
-    // For now, accept any 6-digit OTP
-    if (otp && otp.length === 6) {
-      res.json({
-        error: false,
-        message: 'OTP verified successfully'
-      });
-    } else {
-      res.status(400).json({
+    if (!phoneNumber || !otp) {
+      return res.status(400).json({
         error: true,
-        message: 'Invalid OTP'
+        message: 'Phone number and OTP are required'
       });
     }
+    
+    // Get stored OTP
+    global.otpStore = global.otpStore || {};
+    const storedOtpData = global.otpStore[phoneNumber];
+    
+    if (!storedOtpData) {
+      return res.status(400).json({
+        error: true,
+        message: 'No OTP found for this phone number. Please request a new OTP.'
+      });
+    }
+    
+    // Check if OTP has expired
+    if (Date.now() > storedOtpData.expiry) {
+      delete global.otpStore[phoneNumber];
+      return res.status(400).json({
+        error: true,
+        message: 'OTP has expired. Please request a new OTP.'
+      });
+    }
+    
+    // Verify OTP using MSG91Service
+    const verificationResult = await MSG91Service.verifyOTP(phoneNumber, otp, storedOtpData.otp);
+    
+    if (verificationResult.error) {
+      return res.status(400).json({
+        error: true,
+        message: verificationResult.message
+      });
+    }
+    
+    // OTP verified successfully, clean up
+    delete global.otpStore[phoneNumber];
+    
+    res.json({
+      error: false,
+      message: 'OTP verified successfully'
+    });
+
   } catch (error) {
     console.error('OTP verification error:', error);
     res.status(500).json({

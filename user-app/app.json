@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Lula Streamer",
-    "slug": "lula-streamer",
+    "name": "Lula User",
+    "slug": "lula-user",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -25,8 +25,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#335EF7"
       },
-      "package": "com.lula.streamer",
-      "googleServicesFile": "./google-services.json",
+      "package": "com.lula.user",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -52,7 +51,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-dev-client",
       "@stream-io/video-react-native-sdk",
       [
         "expo-build-properties",
@@ -78,7 +76,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "666d261a-6b26-4558-8319-8b8794633da5"
+        "projectId": "17140c11-dbd4-40c3-b887-7313257a395f"
       }
     }
   }

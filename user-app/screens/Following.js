@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from '../components/shared/Loading';
 import { handleError } from '../utils/function';
-import FollowService from '../services/FollowService';
+import BackendService from '../services/BackendService';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 

@@ -19,8 +19,8 @@ import { Entypo, Ionicons, FontAwesome } from '@expo/vector-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Video } from 'expo-av';
 import showToast from '../utils/toast'
-import AuthService from '../services/AuthService';
-import PostService from '../services/PostService';
+import NewAuthService from '../services/NewAuthService';
+import BackendService from '../services/BackendService';
 import { handleError } from '../utils/function';
 import Loading from '../components/shared/Loading';
 import coinImage from '../assets/images/coin.png';

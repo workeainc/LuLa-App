@@ -1,7 +1,7 @@
 // notificationHandler.js
 import { navigate } from './navigations/RootNavigation';
 import CallManager from './utils/CallManager';
-import AuthService from './services/AuthService';
+import NewAuthService from './services/NewAuthService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 async function getCurrentUserFromStorage() {

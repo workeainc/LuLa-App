@@ -9,7 +9,7 @@ import ChatList from '../screens/ChatList';
 import Analytics from '../screens/Analytics';
 import showToast from '../utils/toast';
 import { useTheme } from '../theme/ThemeProvider';
-import AuthService from '../services/AuthService';
+import NewAuthService from '../services/NewAuthService';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { updateUser } from '../store/slices/auth';

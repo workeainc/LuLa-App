@@ -26,7 +26,6 @@
         "backgroundColor": "#335EF7"
       },
       "package": "com.lula.streamer",
-      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -52,7 +51,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-dev-client",
       "@stream-io/video-react-native-sdk",
       [
         "expo-build-properties",
@@ -78,8 +76,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "666d261a-6b26-4558-8319-8b8794633da5"
+        "projectId": "b116983d-35c6-4102-8bee-d0d5d60554ad"
       }
-    }
+    },
+    "owner": "bambhroliakeri"
   }
 }

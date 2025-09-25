@@ -1,52 +1,39 @@
-# Use Node.js LTS version
-FROM node:18-alpine AS builder
+# Dockerfile for Streamer App
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apk add --no-cache \
-    python3 \
-    make \
-    g++
+    dumb-init \
+    && addgroup -g 1001 -S nodejs \
+    && adduser -S nodejs -u 1001
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci && npm cache clean --force
-
-# Install web dependencies for Expo web
-RUN npx expo install react-native-web@~0.19.6 react-dom@18.2.0 @expo/metro-runtime@~3.1.3
+RUN npm ci --legacy-peer-deps && npm cache clean --force
 
 # Copy application code
 COPY . .
 
-# Replace Firebase config with web-compatible version
-RUN cp firebaseConfig.web.js firebaseConfig.js
+# Create logs directory and fix permissions
+RUN mkdir -p logs && \
+    chown -R nodejs:nodejs logs && \
+    chown -R nodejs:nodejs /app
 
-# Replace index.js with web-compatible version
-RUN cp index.web.js index.js
+# Switch to non-root user
+USER nodejs
 
-# Build static web output
-ENV CI=1 EXPO_NO_TELEMETRY=1
-RUN npx expo export --platform web --output dist
-
-########################################
-# Runtime image - Nginx serving static
-########################################
-FROM nginx:alpine
-
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy APK file if it exists
-COPY streamer-app.apk /usr/share/nginx/html/ 2>/dev/null || true
-
-# SPA fallback config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
+# Expose port
+EXPOSE 19007
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost || exit 1
+  CMD node -e "require('http').get('http://localhost:8081', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Start application
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "start"]

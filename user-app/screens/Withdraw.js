@@ -4,8 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AuthService from '../services/AuthService';
-import WithdrawService from '../services/WithdrawService';
+import NewAuthService from '../services/NewAuthService';
+import BackendService from '../services/BackendService';
 import showToast from '../utils/toast';
 import { handleError } from '../utils/function';
 import { updateUser } from '../store/slices/auth'; // Import the action to update user

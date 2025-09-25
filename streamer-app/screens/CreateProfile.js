@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, Dimensions, Alert } from 'react-native'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, Dimensions, Alert, Platform } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -8,7 +8,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import SubmitButton from '../components/ui/SubmitButton'
 import { handleError } from '../utils/function'
 import { useDispatch, useSelector } from 'react-redux'
-import AuthService from '../services/AuthService'
+import NewAuthService from '../services/NewAuthService'
 import showToast from '../utils/toast'
 import { setUser } from '../store/slices/auth'
 import Loading from '../components/shared/Loading'
@@ -76,7 +76,7 @@ export default function CreateProfile() {
                 return
             }
             setIsSubmitting(true)
-            const profileUri = await AuthService.uploadFiles(profileImage, "lula/streamer/profile")
+            const profileUri = await NewAuthService.uploadFiles(profileImage, "lula/streamer/profile")
 
             const body = {
                 ...formData,
@@ -86,10 +86,10 @@ export default function CreateProfile() {
                 status: user.role === "STREAMER" ? false : true
             }
 
-            const res = await AuthService.update(user.id, body)
+            const res = await NewAuthService.update(user.id, body)
 
             if (res.success) {
-                const res = await AuthService.getUser(user.id)
+                const res = await NewAuthService.getUser(user.id)
                 dispatch(setUser(res.user))
                 showToast(res.message, "success")
                 // Navigate to PendingVerification if streamer, otherwise to Main
@@ -109,7 +109,21 @@ export default function CreateProfile() {
     }
 
     const pickImage = async () => {
-        // Show options for image quality
+        // Web platform doesn't support Alert.alert, use direct image picker
+        if (Platform.OS === 'web') {
+            console.log('🌐 [Web] Direct image picker launch');
+            const result = await launchProfileImagePicker();
+            if (result && result.uri) {
+                console.log('🌐 [Web] Image selected:', result.uri);
+                setProfileImage(result.uri);
+                showToast('Profile picture selected successfully!', 'success');
+            } else {
+                console.log('🌐 [Web] No image selected');
+            }
+            return;
+        }
+
+        // Show options for image quality (native platforms only)
         Alert.alert(
             'Choose Profile Picture',
             'Select how you want to upload your profile picture',

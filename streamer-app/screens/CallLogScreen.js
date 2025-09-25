@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
-import CallService from '../services/CallService';
-import UserService from '../services/UserService';
+import NewCallService from '../services/NewCallService';
+import NewUserService from '../services/NewUserService';
 import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';

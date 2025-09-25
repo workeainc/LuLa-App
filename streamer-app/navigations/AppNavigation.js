@@ -10,8 +10,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { useFonts } from 'expo-font'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { FONTS } from '../constants/fonts'
-import app from '@react-native-firebase/app'
-import { getAuth } from '@react-native-firebase/auth'
+// ✅ Express.js Backend Integration - Firebase removed
 import { navigationRef } from './RootNavigation'
 import {
     NoInternet,
@@ -46,7 +45,8 @@ import {
     EditPost,
 } from '../screens'
 import { handleError } from '../utils/function'
-import AuthService from '../services/AuthService'
+// ✅ Express.js Backend Integration - Firebase removed
+import NewAuthService from '../services/NewAuthService'
 import showToast from '../utils/toast'
 import { setUser } from '../store/slices/auth'
 import { Camera } from 'expo-camera'
@@ -62,23 +62,21 @@ const AppNavigation = () => {
     const [isConnected, setIsConnected] = useState(true)
     const [isFirstLaunch, setIsFirstLaunch] = useState(null)
     const [fontsLoaded] = useFonts(FONTS)
+    
+    // 🌐 Web compatibility: Skip font loading requirement on web
+    const isWeb = typeof window !== 'undefined'
+    const shouldWaitForFonts = !isWeb && !fontsLoaded
     const [isLoading, setIsLoading] = useState(true)
 
+    // ✅ Express.js Backend Integration - Firebase removed
     let currentUser = null
-    try {
-        const defaultApp = app()
-        if (defaultApp?.name) {
-            currentUser = getAuth().currentUser
-        }
-    } catch (e) {
-        currentUser = null
-    }
+    // Firebase authentication removed - using Express.js backend
 
     const onLayoutRootView = useCallback(async () => {
-        if (fontsLoaded) {
+        if (fontsLoaded || isWeb) {
             await SplashScreen.hideAsync()
         }
-    }, [fontsLoaded])
+    }, [fontsLoaded, isWeb])
 
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener((state) => {
@@ -116,21 +114,41 @@ const AppNavigation = () => {
     }
 useEffect(() => {
   const restoreUserFromStorage = async () => {
+    console.log('🔍 [AppNavigation] Starting user restoration process...')
     try {
       const storedUserId = await AsyncStorage.getItem('loggedInUserId')
       if (storedUserId) {
-        // Use the new session checking method
-        const res = await AuthService.checkUserSession(storedUserId)
-        if (!res.error && res.user && res.user.id) {
-          dispatch(setUser(res.user))
-          console.log('User restored from storage:', res.user.id)
-        } else {
-          console.warn('User session invalid:', res.message)
-          // Storage is already cleared by checkUserSession if needed
+        console.log('🔍 [AppNavigation] Found stored user ID:', storedUserId)
+        // Use the new session checking method with timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Backend timeout')), 2000) // Reduced to 2 seconds
+        );
+        
+        try {
+          console.log('🔍 [AppNavigation] Checking user session...')
+          const res = await Promise.race([
+            NewAuthService.getCurrentUser(),
+            timeoutPromise
+          ]);
+          
+          if (!res.error && res.user && res.user.id) {
+            dispatch(setUser(res.user))
+            console.log('✅ [AppNavigation] User restored from storage:', res.user.id)
+          } else {
+            console.warn('⚠️ [AppNavigation] User session invalid:', res.message)
+            // Clear storage if session invalid
+            await AsyncStorage.removeItem('loggedInUserId')
+          }
+        } catch (backendError) {
+          console.warn('⏰ [AppNavigation] Backend unavailable, proceeding without user session:', backendError.message)
+          // Don't clear storage on timeout - user might be offline
+          // await AsyncStorage.removeItem('loggedInUserId')
         }
+      } else {
+        console.log('🔍 [AppNavigation] No stored user ID found')
       }
     } catch (error) {
-      console.error('Failed to restore user from AsyncStorage:', error)
+      console.error('❌ [AppNavigation] Failed to restore user from AsyncStorage:', error)
       // Clear storage on error to prevent issues
       try {
         await AsyncStorage.removeItem('loggedInUserId')
@@ -138,6 +156,7 @@ useEffect(() => {
         console.error('Failed to clear storage:', clearError)
       }
     } finally {
+      console.log('✅ [AppNavigation] User restoration complete, setting loading to false')
       setIsLoading(false)
     }
   }
@@ -201,7 +220,22 @@ useEffect(() => {
         return initial
     }, [isFirstLaunch, isConnected, user])
 
-    if (isFirstLaunch === null || !fontsLoaded || isLoading) {
+    // Debug logging for loading states
+    console.log('🔍 AppNavigation Loading States:', {
+        isFirstLaunch,
+        fontsLoaded,
+        shouldWaitForFonts,
+        isLoading,
+        user: user?.id || 'none',
+        isWeb
+    });
+
+    if (isFirstLaunch === null || shouldWaitForFonts || isLoading) {
+        console.log('🔍 AppNavigation waiting because:', {
+            waitingForFirstLaunch: isFirstLaunch === null,
+            waitingForFonts: shouldWaitForFonts,
+            waitingForLoading: isLoading
+        });
         return null // Wait until the first launch status is determined and fonts are loaded
     }
 

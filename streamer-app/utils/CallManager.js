@@ -1,7 +1,7 @@
 // CallManager.js
 import { Alert } from 'react-native';
 import { StreamVideoClient } from '@stream-io/video-react-native-sdk';
-import functions from '@react-native-firebase/functions';
+import BackendService from '../services/BackendService';
 import { navigate } from '../navigations/RootNavigation';
 import { 
     handleIncomingCallInstantly, 
@@ -48,7 +48,9 @@ class CallManager {
     async tokenProvider(userId) {
         console.log(userId)
         try {
-            const response = await fetch('https://lula-fcm-notification.vercel.app/api/generate-token', {
+            // Get token from our Express.js backend instead of external service
+            const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002/api';
+            const response = await fetch(`${API_BASE_URL}/stream/generate-token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,13 +59,16 @@ class CallManager {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch token from Vercel function');
+                throw new Error('Failed to fetch token from backend');
             }
 
             const data = await response.json();
             return data.token;
         } catch (error) {
             console.error('Error generating token:', error);
+            // Return null token for web compatibility
+            console.warn('🌐 Web environment: Stream token generation failed, using null token');
+            return null;
         }
     }
 

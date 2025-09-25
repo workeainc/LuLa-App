@@ -2,8 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import app from '@react-native-firebase/app';
-import { getAuth } from '@react-native-firebase/auth'; // Import Firebase auth if you're using it for sign out
+// ✅ Express.js Backend Integration - Firebase removed
 
 const PendingVerification = () => {
   const navigation = useNavigation();
@@ -12,13 +11,7 @@ const PendingVerification = () => {
     try {
       // Clear user data from AsyncStorage
       await AsyncStorage.removeItem('loggedInUserId');
-      // If you are using Firebase Authentication, sign out the user
-      try {
-        const defaultApp = app();
-        if (defaultApp?.name && getAuth().currentUser) {
-          await getAuth().signOut();
-        }
-      } catch (e) {}
+      await AsyncStorage.removeItem('authToken');
       // Navigate to the login screen or a welcome screen
       navigation.reset({
         index: 0,

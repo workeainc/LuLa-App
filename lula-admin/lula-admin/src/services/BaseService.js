@@ -1,12 +1,8 @@
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { firestore, auth, storage } from "../configs/firebase.config";
-import { serverTimestamp, getDocs, collection, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import axiosInstance from "../configs/axios.config";
 
 class BaseService {
-  db = firestore;
-  auth = auth;
-  storage = storage;
   #collection;
+  
   constructor(collectionName) {
     this.#collection = collectionName;
   }
@@ -16,35 +12,35 @@ class BaseService {
     return { error: true, message };
   }
 
-  toFirestore(data) {
+  // Convert data to API format
+  toAPI(data) {
     return {
       ...data,
-      createdAt: serverTimestamp(),
+      createdAt: new Date(),
     };
   }
 
-  fromFirestore(doc) {
-    const data = doc.data();
+  // Convert API response to local format
+  fromAPI(data) {
     return {
       ...data,
-      id: doc.id,
-      createdAt: data.createdAt.toDate(),
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
     };
   }
 
   async update(docId, data) {
     try {
-      await updateDoc(doc(this.db, this.#collection, docId), data);
-      return { success: true, message: "Document updated successfully" };
+      const response = await axiosInstance.put(`/${this.#collection}/${docId}`, data);
+      return { success: true, message: "Document updated successfully", data: response.data };
     } catch (error) {
-      console.error(error)
+      console.error(error);
       return { success: false, message: "Failed to update document" };
     }
   }
 
   async delete(docId) {
     try {
-      await deleteDoc(doc(this.db, this.#collection, docId));
+      await axiosInstance.delete(`/${this.#collection}/${docId}`);
       return { success: true, message: "Document deleted successfully" };
     } catch (error) {
       return { success: false, message: "Failed to delete document" };
@@ -52,23 +48,77 @@ class BaseService {
   }
 
   async getAsMap(collectionName) {
-    const snapshop = await getDocs(collection(firestore, collectionName));
-
-    const map = new Map();
-
-    snapshop.docs.forEach((doc) => {
-      map.set(doc.id, doc.data());
-    });
-
-    return map;
+    try {
+      const response = await axiosInstance.get(`/${collectionName}`);
+      const map = new Map();
+      
+      if (response.data && Array.isArray(response.data)) {
+        response.data.forEach((item) => {
+          map.set(item._id || item.id, item);
+        });
+      }
+      
+      return map;
+    } catch (error) {
+      console.error(`Error fetching ${collectionName}:`, error);
+      return new Map();
+    }
   }
 
   async uploadFiles(file, path) {
-    const storageRef = ref(this.storage, `${path}/${Date.now()}-${file.name.replaceAll(" ", "-")}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    const snapshot = await uploadTask;
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('path', path);
+      
+      const response = await axiosInstance.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data.url;
+    } catch (error) {
+      console.error('File upload error:', error);
+      throw error;
+    }
+  }
+
+  // Generic API methods
+  async getAll(params = {}) {
+    try {
+      const response = await axiosInstance.get(`/${this.#collection}`, { params });
+      return { error: false, data: response.data };
+    } catch (error) {
+      return { 
+        error: true, 
+        message: error.response?.data?.message || `Failed to get ${this.#collection}` 
+      };
+    }
+  }
+
+  async getById(id) {
+    try {
+      const response = await axiosInstance.get(`/${this.#collection}/${id}`);
+      return { error: false, data: response.data };
+    } catch (error) {
+      return { 
+        error: true, 
+        message: error.response?.data?.message || `Failed to get ${this.#collection}` 
+      };
+    }
+  }
+
+  async create(data) {
+    try {
+      const response = await axiosInstance.post(`/${this.#collection}`, data);
+      return { error: false, data: response.data };
+    } catch (error) {
+      return { 
+        error: true, 
+        message: error.response?.data?.message || `Failed to create ${this.#collection}` 
+      };
+    }
   }
 }
 

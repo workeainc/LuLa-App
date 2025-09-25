@@ -5,7 +5,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import Entypo from '@expo/vector-icons/Entypo';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSelector } from 'react-redux'; // Import useSelector
-import AuthService from '../services/AuthService'; // Import AuthService
+import NewAuthService from '../services/NewAuthService'; // Import NewAuthService
 import showToast from '../utils/toast'; // Assuming you have a toast utility
 import { launchProfileImagePicker, launchFullProfileImagePicker, launchUnrestrictedProfileImagePicker } from '../utils/ImagePickerHelper';
 
@@ -29,7 +29,7 @@ const EditProfile = () => {
                 try {
                     // You might already have the full user object in Redux,
                     // but fetching it again here ensures you have the latest data.
-                    const res = await AuthService.getUser(user.id);
+                    const res = await NewAuthService.getCurrentUser();
                     if (!res.error) {
                         const userData = res.user;
                         setName(userData.name || ''); // Use empty string if data is null/undefined
@@ -184,7 +184,7 @@ const EditProfile = () => {
                         console.log('Starting image upload for:', profileImage);
                         
                         // Upload the new image and get the URI
-                        const uploadResult = await AuthService.uploadFiles(profileImage, 'lula/streamer/profile');
+                        const uploadResult = await NewAuthService.uploadProfileImage(profileImage);
                         
                         // Check if upload was successful
                         if (uploadResult && uploadResult.error) {
@@ -227,7 +227,7 @@ const EditProfile = () => {
                 };
 
                 console.log('Updating profile with data:', updatedUserData);
-                const res = await AuthService.updateUserProfile(user.id, updatedUserData);
+                const res = await NewAuthService.updateProfile(user.id, updatedUserData);
 
                 if (!res.error) {
                     console.log('Profile updated successfully:', res);
@@ -235,7 +235,7 @@ const EditProfile = () => {
                     // Force a refresh of the profile data
                     if (user && user.id) {
                         try {
-                            const refreshRes = await AuthService.getUser(user.id);
+                            const refreshRes = await NewAuthService.getCurrentUser();
                             if (!refreshRes.error) {
                                 console.log('Refreshed user data:', refreshRes.user);
                                 // Update local state with fresh data

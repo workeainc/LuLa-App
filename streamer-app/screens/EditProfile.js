@@ -5,7 +5,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import Entypo from '@expo/vector-icons/Entypo';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSelector } from 'react-redux'; // Import useSelector
-import AuthService from '../services/AuthService'; // Import AuthService
+import NewAuthService from '../services/NewAuthService'; // Import NewAuthService
 import showToast from '../utils/toast'; // Assuming you have a toast utility
 import { launchProfileImagePicker, launchFullProfileImagePicker, launchUnrestrictedProfileImagePicker } from '../utils/ImagePickerHelper';
 

@@ -5,7 +5,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AuthService from '../services/NewAuthService';
-import WithdrawService from '../services/WithdrawService';
+import BackendService from '../services/BackendService';
 import CommissionService from '../services/CommissionService';
 import CoinService from '../services/CoinService';
 import showToast from '../utils/toast';

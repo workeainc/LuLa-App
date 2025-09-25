@@ -19,7 +19,7 @@ import notifee from '@notifee/react-native';
 import { Audio } from 'expo-av';
 import { DeviceEventEmitter } from 'react-native';
 import RingtoneManager from '../utils/RingtoneManager';
-import AuthService from '../services/AuthService';
+import NewAuthService from '../services/NewAuthService';
 import CallManager from '../utils/CallManager';
 import { callType } from '../constants/data';
 

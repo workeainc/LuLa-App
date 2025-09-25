@@ -116,7 +116,7 @@ const CallRoom = ({ call, endCall, exitToMain }) => {
                 />
 
                 {/* Additional instant end call button for emergency use */}
-                <View style={styles.muteButtonContainer} pointerEvents="box-none">
+                <View style={styles.muteButtonContainer}>
                     <TouchableOpacity onPress={toggleMute} style={styles.muteButton}>
                         <MaterialIcons name={isMuted ? 'mic-off' : 'mic'} size={22} color="#fff" />
                         <Text style={{ color: '#fff', marginLeft: 8 }}>{isMuted ? 'Unmute' : 'Mute'}</Text>

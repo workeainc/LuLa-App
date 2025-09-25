@@ -6,9 +6,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import RBSheet from 'react-native-raw-bottom-sheet'
 import { clearAuth } from '../store/slices/auth'
 import { handleError } from '../utils/function'
-import app from '@react-native-firebase/app'
-import { getAuth } from "@react-native-firebase/auth"
-import AuthService from '../services/AuthService'
+// ✅ Express.js Backend Integration - Firebase removed
+import NewAuthService from '../services/NewAuthService'
 const MenuScreen = () => {
     const navigation = useNavigation()
     const dispatch = useDispatch()
@@ -22,7 +21,7 @@ const MenuScreen = () => {
             
             if (currentUser?.id) {
                 // Use the new logout method
-                await AuthService.logout(currentUser.id);
+                await NewAuthService.logout();
             }
             
             // Clear Redux state
@@ -60,24 +59,16 @@ const MenuScreen = () => {
             const uid = currentUser?.uid || user?.id;
 
             // Step 3: Delete user from Firestore
-            const res = await AuthService.deleteAccount(uid);
+            const res = await NewAuthService.deleteAccount(uid);
 
             if (!res.error) {
-                // Step 4: Sign out from Firebase Auth (if still logged in)
-                try {
-                    const defaultApp = app();
-                    if (defaultApp?.name && getAuth().currentUser) {
-                        await getAuth().signOut();
-                    }
-                } catch (e) {}
-
-                // Step 5: Clear Redux
+                // Clear Redux
                 dispatch(clearAuth());
 
-                // Step 6: Show success message
+                // Show success message
                 showToast('Your account has been deleted successfully.', 'success');
 
-                // Step 7: Delay for smooth transition
+                // Delay for smooth transition
                 setTimeout(() => {
                     navigation.reset({
                         index: 0,

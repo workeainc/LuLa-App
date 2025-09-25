@@ -3,7 +3,7 @@ import { StyleSheet, Modal, Text, TouchableOpacity, View, Dimensions, AppState, 
 import { useSelector } from 'react-redux';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import AuthService from '../../services/AuthService';
+import NewAuthService from '../../services/NewAuthService';
 import { navigate } from '../../navigations/RootNavigation';
 import { callType } from '../../constants/data';
 import { Audio } from 'expo-av';
@@ -54,7 +54,7 @@ const CallWrapper = ({ children }) => {
                 stopRingtone();
                 
                 // Recheck for any pending calls when coming to foreground
-                AuthService.getUser(user.id).then((result) => {
+                NewAuthService.getUser(user.id).then((result) => {
                     console.log('🔄 [CallWrapper] User data on foreground:', result);
                     
                     if (result && !result.error && result.user?.currentCall) {
@@ -96,10 +96,10 @@ const CallWrapper = ({ children }) => {
         let unsubscribe = null;
         let isMounted = true;
 
-        // Use async pattern like lula-user for better error handling
-        (async () => {
-            try {
-                const fn = AuthService.listenUserId(user.id, (data) => {
+            // Use async pattern like lula-user for better error handling
+            (async () => {
+                try {
+                    const fn = NewAuthService.listenUserId(user.id, (data) => {
                     if (!isMounted) return;
                     
                     console.log('🔥 [CallWrapper] Firestore listener triggered:', { 
@@ -194,7 +194,7 @@ const CallWrapper = ({ children }) => {
 
         // Update call status to declined
         if (currentCall?.callId && user?.id) {
-            AuthService.update(user.id, { currentCall: null, inCall: false });
+            NewAuthService.update(user.id, { currentCall: null, inCall: false });
         }
     };
 

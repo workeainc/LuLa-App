@@ -5,8 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import avatarMen from '../assets/images/avatar.png' // Your default avatar image
 import avatar from '../assets/images/men.png' // Your default avatar image
-import AuthService from '../services/AuthService'
-import ChatService from '../services/ChatService' // assuming ChatService has getChatList method
+import NewAuthService from '../services/NewAuthService'
+import NewChatService from '../services/NewChatService' // Use NewChatService for getChatList method
 import { useSelector } from 'react-redux'
 import { formatDate } from '../utils/function'
 

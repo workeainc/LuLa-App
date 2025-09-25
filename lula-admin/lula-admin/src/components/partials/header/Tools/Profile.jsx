@@ -6,8 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { clearAuth } from "../../../../store/slice/auth";
 import { useSelector } from "react-redux";
-import {signOut} from "firebase/auth"
-import {auth} from "../../../../configs/firebase.config"
+import AdminAuthService from "../../../../services/AdminAuthService";
 
 
 const ProfileLabel = () => {
@@ -30,10 +29,10 @@ const Profile = () => {
 
   const dispatch = useDispatch();
 
-  const handleLogout =async () => {
+  const handleLogout = async () => {
     const isConfirmed = confirm("Are you sure you want to log out!");
     if (isConfirmed) {
-      await signOut(auth)
+      AdminAuthService.logout();
       dispatch(clearAuth());
       navigate("/login");
     }

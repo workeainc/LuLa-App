@@ -1,82 +1,92 @@
-import BaseService from "./BaseService";
-import { AuthErrorCodes, createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, updateDoc, query, onSnapshot, collection, getDoc } from "firebase/firestore";
+import axiosInstance from "../configs/axios.config";
 
-class AuthService extends BaseService {
-  #collection;
-  constructor(collection) {
-    super();
-    this.#collection = collection;
-  }
-
+class AccountService {
   async create(data) {
     try {
-      const { user } = await createUserWithEmailAndPassword(this.auth, data.email, data.password);
-      delete data.password;
-      const dummyUser = {
+      const response = await axiosInstance.post('/admin/users', {
         ...data,
-        status: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        id: user.uid,
-      };
-
-      await setDoc(doc(this.db, this.#collection, user.uid), dummyUser);
-
-      return { error: false, message: "Account Created Successfully" };
+        role: 'ADMIN'
+      });
+      
+      return { error: false, message: "Account Created Successfully", data: response.data };
     } catch (error) {
-      if (error.code === AuthErrorCodes.EMAIL_EXISTS) {
+      if (error.response?.status === 409) {
         return this.handleError("Email is Already Taken");
       } else {
-        return this.handleError(error.message);
+        return this.handleError(error.response?.data?.message || error.message);
       }
     }
   }
 
-  getAccount(callback) {
-    const ref = query(collection(this.db, this.#collection));
-    const unsubscribe = onSnapshot(ref, async (snapshot) => {
-      const data = snapshot.docs.map((doc) => this.fromFirestore(doc));
-      callback(data);
-    });
-    return unsubscribe;
+  async getAccount(callback) {
+    try {
+      const response = await axiosInstance.get('/admin/users', {
+        params: { role: 'ADMIN' }
+      });
+      
+      if (callback && typeof callback === 'function') {
+        callback(response.data);
+      }
+      
+      return { error: false, data: response.data };
+    } catch (error) {
+      if (callback && typeof callback === 'function') {
+        callback([]);
+      }
+      return { 
+        error: true, 
+        message: error.response?.data?.message || 'Failed to get accounts' 
+      };
+    }
   }
 
   async updateStatus(id, newStatus) {
     try {
-      const ref = doc(this.db, this.#collection, id);
-      await updateDoc(ref, {
-        status: newStatus,
+      const response = await axiosInstance.put(`/admin/users/${id}`, {
+        status: newStatus
       });
-      return { error: false, message: 'Status Updated Successfully' };
+      
+      return { error: false, message: 'Status Updated Successfully', data: response.data };
     } catch (error) {
-      return { error: true, message: error.message };
+      return { 
+        error: true, 
+        message: error.response?.data?.message || error.message 
+      };
     }
   }
 
   async getAccountById(id) {
     try {
-      const ref = doc(this.db, this.#collection, id);
-      const snapshot = await getDoc(ref);
-      return { error: false, data:this.fromFirestore(snapshot) };
+      const response = await axiosInstance.get(`/admin/users/${id}`);
+      return { error: false, data: response.data };
     } catch (error) {
-      return { error: true, message: error.message };
+      return { 
+        error: true, 
+        message: error.response?.data?.message || 'Failed to get account' 
+      };
     }
   }
 
   async updateDetails(data) {
     try {
-      const ref = doc(this.db, this.#collection, data.id);
-      await updateDoc(ref, {
+      const response = await axiosInstance.put(`/admin/users/${data.id}`, {
         name: data.name,
         phone: data.phone,
       });
 
-      return { error: false, message: "Details Updated Successfully" };
+      return { error: false, message: "Details Updated Successfully", data: response.data };
     } catch (error) {
-      return { error: true, message: error.message };
+      return { 
+        error: true, 
+        message: error.response?.data?.message || error.message 
+      };
     }
+  }
+
+  handleError(message) {
+    console.error(message);
+    return { error: true, message };
   }
 }
 
-export default new AuthService("super-admin");
+export default new AccountService();

@@ -4,7 +4,7 @@ import { clearAuth } from "../store/slice/auth";
 
 const unauthorizedCode = [401];
 
-const baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
+const baseURL = `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3002'}/api`;
 
 export const axiosInstance = axios.create({
   timeout: 60000,

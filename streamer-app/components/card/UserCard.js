@@ -3,12 +3,12 @@ import React, { useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useSelector } from 'react-redux'
 import { useNavigation } from '@react-navigation/native'
-import ChatService from '../../services/ChatService'
+import NewChatService from '../../services/NewChatService'
 import showToast from '../../utils/toast'
 import { handleError } from '../../utils/function'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import FollowService from '../../services/FollowService'
-import AuthService from '../../services/AuthService'
+import BackendService from '../../services/BackendService'
+import NewAuthService from '../../services/NewAuthService'
 
 const UserCard = ({ item }) => {
     // Safety check for item

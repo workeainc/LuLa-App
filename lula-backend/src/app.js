@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path');
 require('dotenv').config();
 
 // Import routes
@@ -16,6 +17,7 @@ const adminRoutes = require('./routes/admin');
 const streamRoutes = require('./routes/stream');
 const chatRoutes = require('./routes/chat');
 const notificationRoutes = require('./routes/notifications');
+const withdrawalRoutes = require('./routes/withdrawals');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -45,6 +47,9 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/lula', {
   useNewUrlParser: true,
@@ -61,9 +66,10 @@ app.use('/api/coin', authMiddleware, coinRoutes);
 app.use('/api/commission', authMiddleware, commissionRoutes);
 app.use('/api/upload', authMiddleware, uploadRoutes);
 app.use('/api/admin', authMiddleware, adminRoutes);
-app.use('/api/stream', authMiddleware, streamRoutes);
+app.use('/api/stream', streamRoutes);
 app.use('/api/chat', authMiddleware, chatRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
+app.use('/api/admin/withdrawals', authMiddleware, withdrawalRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
